@@ -113,6 +113,17 @@ en `src/lib/business.ts`. Para cambiarlos, edita ese archivo. El logo se sirve
 desde `public/logo-mark.jpg` (el ícono cuadrado) — para reemplazarlo, sustituye
 ese archivo por tu propia imagen cuadrada.
 
+### Ícono de la app (favicon / instalar en el celular)
+
+`public/icons/` trae el logo ya recortado y exportado en todos los tamaños que
+piden los navegadores y sistemas operativos (favicon, ícono para iOS "Agregar a
+inicio", ícono de Android/PWA y su versión "maskable" con margen de seguridad
+para el recorte circular de Android). Están conectados en `src/app/layout.tsx`
+(metadatos `icons`) y en `public/manifest.webmanifest`, así que la pestaña del
+navegador, el ícono al "Agregar a pantalla de inicio" en Android/iOS y el splash
+de la PWA ya muestran el logo real. Si cambias el logo, vuelve a generar estos
+archivos a partir de la nueva imagen (recorte cuadrado + `Pillow`/`resize`).
+
 ## 8. Reportes en Excel
 
 Desde **Reportes** puedes exportar `.xlsx` de pagos (con filtro de rango de
