@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { addDays } from "date-fns";
 import {
   orderBy,
   createDoc,
@@ -39,7 +40,45 @@ const STATUS_COLOR: Record<DocStatus, "slate" | "green" | "amber" | "red" | "bra
   rechazada: "red",
 };
 
-const emptyItem: QuotationItem = { description: "", quantity: 1, unitPrice: 0 };
+const emptyItem: QuotationItem = {
+  description: "",
+  brand: "",
+  quantity: 1,
+  unitPrice: 0,
+  discount: 0,
+};
+
+function defaultValidUntil() {
+  return addDays(new Date(), 15).toISOString().slice(0, 10);
+}
+
+function makeDefaultForm(clientId = "") {
+  return {
+    clientId,
+    projectName: "",
+    description: "",
+    attentionTo: "",
+    validUntil: defaultValidUntil(),
+    currency: "MXN",
+    ivaApplies: false,
+    paymentTerms: "50% anticipo al confirmar / 50% contra entrega",
+    deliveryTime: "",
+    warranty: "",
+    installation: "",
+    transport: "",
+    notes: "",
+    items: [{ ...emptyItem }] as QuotationItem[],
+  };
+}
+
+function calcSubtotal(items: QuotationItem[]) {
+  return items.reduce((s, it) => {
+    const qty = Number(it.quantity) || 0;
+    const price = Number(it.unitPrice) || 0;
+    const discount = Number(it.discount) || 0;
+    return s + qty * price * (1 - discount / 100);
+  }, 0);
+}
 
 export default function QuotationsPage() {
   const searchParams = useSearchParams();
@@ -60,34 +99,19 @@ export default function QuotationsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sendingId, setSendingId] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    clientId: openedFromQuery ? searchParams.get("clientId") ?? "" : "",
-    projectName: "",
-    currency: "MXN",
-    notes: "",
-    items: [{ ...emptyItem }] as QuotationItem[],
-  });
-
-  const total = form.items.reduce(
-    (s, it) => s + (Number(it.quantity) || 0) * (Number(it.unitPrice) || 0),
-    0
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [form, setForm] = useState(() =>
+    makeDefaultForm(openedFromQuery ? searchParams.get("clientId") ?? "" : "")
   );
+
+  const subtotal = calcSubtotal(form.items);
+  const total = form.ivaApplies ? subtotal * 1.16 : subtotal;
 
   function updateItem(index: number, patch: Partial<QuotationItem>) {
     setForm((f) => ({
       ...f,
       items: f.items.map((it, i) => (i === index ? { ...it, ...patch } : it)),
     }));
-  }
-
-  function resetForm() {
-    setForm({
-      clientId: "",
-      projectName: "",
-      currency: "MXN",
-      notes: "",
-      items: [{ ...emptyItem }],
-    });
   }
 
   async function handleCreate(e: React.FormEvent) {
@@ -100,13 +124,22 @@ export default function QuotationsPage() {
         folio,
         clientId: form.clientId,
         projectName: form.projectName,
+        description: form.description,
+        attentionTo: form.attentionTo,
+        validUntil: form.validUntil,
         items: form.items.filter((it) => it.description.trim()),
         total,
         currency: form.currency,
+        ivaApplies: form.ivaApplies,
+        paymentTerms: form.paymentTerms,
+        deliveryTime: form.deliveryTime,
+        warranty: form.warranty,
+        installation: form.installation,
+        transport: form.transport,
         status: "borrador" as DocStatus,
         notes: form.notes,
       });
-      resetForm();
+      setForm(makeDefaultForm());
       setOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar");
@@ -115,11 +148,16 @@ export default function QuotationsPage() {
     }
   }
 
-  function handleDownload(q: Quotation) {
+  async function handleDownload(q: Quotation) {
     const client = clientById.get(q.clientId);
     if (!client) return;
-    const doc = buildQuotationPdf(q, client);
-    doc.save(`${q.folio}.pdf`);
+    setDownloadingId(q.id);
+    try {
+      const doc = await buildQuotationPdf(q, client);
+      doc.save(`${q.folio}.pdf`);
+    } finally {
+      setDownloadingId(null);
+    }
   }
 
   async function handleSend(q: Quotation) {
@@ -131,7 +169,7 @@ export default function QuotationsPage() {
     }
     setSendingId(q.id);
     try {
-      handleDownload(q);
+      await handleDownload(q);
       const message = quotationMessage({
         clientName: client.name,
         projectName: q.projectName,
@@ -197,7 +235,11 @@ export default function QuotationsPage() {
                   <p className="mr-2 text-lg font-semibold text-slate-800">
                     {formatCurrency(q.total, q.currency)}
                   </p>
-                  <Button variant="secondary" onClick={() => handleDownload(q)}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleDownload(q)}
+                    disabled={downloadingId === q.id}
+                  >
                     PDF
                   </Button>
                   <Button
@@ -245,7 +287,7 @@ export default function QuotationsPage() {
       >
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Cliente *">
+            <Field label="Cliente / Empresa *">
               <select
                 required
                 className={inputClass}
@@ -274,6 +316,40 @@ export default function QuotationsPage() {
             </Field>
           </div>
 
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Atención a (contacto/teléfono)">
+              <input
+                className={inputClass}
+                placeholder="Deja vacío para usar el teléfono del cliente"
+                value={form.attentionTo}
+                onChange={(e) =>
+                  setForm({ ...form, attentionTo: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Válida hasta">
+              <input
+                type="date"
+                className={inputClass}
+                value={form.validUntil}
+                onChange={(e) =>
+                  setForm({ ...form, validUntil: e.target.value })
+                }
+              />
+            </Field>
+          </div>
+
+          <Field label="Descripción del proyecto">
+            <textarea
+              className={inputClass}
+              rows={2}
+              value={form.description}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
+            />
+          </Field>
+
           <div>
             <div className="mb-2 flex items-center justify-between">
               <p className="text-sm font-medium text-slate-700">Conceptos</p>
@@ -290,57 +366,82 @@ export default function QuotationsPage() {
                 + Agregar concepto
               </button>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {form.items.map((it, i) => (
-                <div key={i} className="grid grid-cols-12 gap-2">
+                <div
+                  key={i}
+                  className="rounded-lg border border-slate-200 p-2"
+                >
                   <input
-                    className={`${inputClass} col-span-6`}
-                    placeholder="Descripción"
+                    className={`${inputClass} mb-2`}
+                    placeholder="Descripción del concepto"
                     value={it.description}
                     onChange={(e) =>
                       updateItem(i, { description: e.target.value })
                     }
                   />
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    className={`${inputClass} col-span-2`}
-                    placeholder="Cant."
-                    value={it.quantity}
-                    onChange={(e) =>
-                      updateItem(i, { quantity: Number(e.target.value) })
-                    }
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className={`${inputClass} col-span-3`}
-                    placeholder="Precio unitario"
-                    value={it.unitPrice}
-                    onChange={(e) =>
-                      updateItem(i, { unitPrice: Number(e.target.value) })
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="col-span-1 text-slate-400 hover:text-red-600"
-                    onClick={() =>
-                      setForm((f) => ({
-                        ...f,
-                        items: f.items.filter((_, idx) => idx !== i),
-                      }))
-                    }
-                  >
-                    ✕
-                  </button>
+                  <div className="grid grid-cols-12 gap-2">
+                    <input
+                      className={`${inputClass} col-span-4`}
+                      placeholder="Marca/Modelo"
+                      value={it.brand}
+                      onChange={(e) =>
+                        updateItem(i, { brand: e.target.value })
+                      }
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      className={`${inputClass} col-span-2`}
+                      placeholder="Cant."
+                      value={it.quantity}
+                      onChange={(e) =>
+                        updateItem(i, { quantity: Number(e.target.value) })
+                      }
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className={`${inputClass} col-span-2`}
+                      placeholder="Precio"
+                      value={it.unitPrice}
+                      onChange={(e) =>
+                        updateItem(i, { unitPrice: Number(e.target.value) })
+                      }
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      className={`${inputClass} col-span-2`}
+                      placeholder="Dscto. %"
+                      value={it.discount}
+                      onChange={(e) =>
+                        updateItem(i, { discount: Number(e.target.value) })
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="col-span-2 text-slate-400 hover:text-red-600"
+                      onClick={() =>
+                        setForm((f) => ({
+                          ...f,
+                          items: f.items.filter((_, idx) => idx !== i),
+                        }))
+                      }
+                    >
+                      ✕ Quitar
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <Field label="Moneda">
               <select
                 className={inputClass}
@@ -353,21 +454,90 @@ export default function QuotationsPage() {
                 <option value="USD">USD</option>
               </select>
             </Field>
-            <div className="flex items-end justify-end">
+            <label className="flex items-center gap-2 self-end pb-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={form.ivaApplies}
+                onChange={(e) =>
+                  setForm({ ...form, ivaApplies: e.target.checked })
+                }
+              />
+              Aplicar IVA (16%)
+            </label>
+            <div className="flex flex-col items-end justify-end text-right">
+              <p className="text-xs text-slate-400">
+                Subtotal: {formatCurrency(subtotal, form.currency)}
+              </p>
               <p className="text-lg font-semibold text-slate-800">
                 Total: {formatCurrency(total, form.currency)}
               </p>
             </div>
           </div>
 
-          <Field label="Notas">
-            <textarea
-              className={inputClass}
-              rows={2}
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            />
-          </Field>
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-700">
+              Condiciones comerciales
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Forma de pago">
+                <input
+                  className={inputClass}
+                  value={form.paymentTerms}
+                  onChange={(e) =>
+                    setForm({ ...form, paymentTerms: e.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Tiempo de entrega">
+                <input
+                  className={inputClass}
+                  placeholder="Ej. 10 días hábiles"
+                  value={form.deliveryTime}
+                  onChange={(e) =>
+                    setForm({ ...form, deliveryTime: e.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Garantía">
+                <input
+                  className={inputClass}
+                  placeholder="Ej. 3 meses de soporte"
+                  value={form.warranty}
+                  onChange={(e) =>
+                    setForm({ ...form, warranty: e.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Instalación">
+                <input
+                  className={inputClass}
+                  placeholder="Ej. Incluida en el precio"
+                  value={form.installation}
+                  onChange={(e) =>
+                    setForm({ ...form, installation: e.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Transporte">
+                <input
+                  className={inputClass}
+                  value={form.transport}
+                  onChange={(e) =>
+                    setForm({ ...form, transport: e.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Notas">
+                <input
+                  className={inputClass}
+                  value={form.notes}
+                  onChange={(e) =>
+                    setForm({ ...form, notes: e.target.value })
+                  }
+                />
+              </Field>
+            </div>
+          </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 

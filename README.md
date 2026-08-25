@@ -13,9 +13,11 @@ reportes en Excel.
   de saldo pendiente y **recibo imprimible** por cada pago.
 - **Dashboard**: ingresos totales, saldo pendiente, proyectos activos y gráfica de
   ingresos por mes.
-- **Cotizaciones**: conceptos con cantidad/precio, folio automático, PDF descargable
-  y envío por WhatsApp con el mensaje ya redactado.
-- **Órdenes de compra**: mismo flujo que las cotizaciones, para tus proveedores.
+- **Cotizaciones**: formato profesional con logo, folio, datos de contacto, marca/modelo
+  y descuento por concepto, IVA opcional y condiciones comerciales (forma de pago, tiempo
+  de entrega, garantía, instalación, transporte). PDF descargable y envío por WhatsApp
+  con el mensaje ya redactado.
+- **Órdenes de compra**: mismo formato y flujo que las cotizaciones, para tus proveedores.
 - **Reportes en Excel (.xlsx)**: pagos (con filtro de fechas), proyectos, clientes
   y cotizaciones.
 
@@ -103,13 +105,21 @@ manualmente) usando la API oficial de Meta:
    queda disponible para integrarlo donde lo necesites — recibe `{ to, text }`
    o `{ to, documentUrl, filename, caption }`.
 
-## 7. Reportes en Excel
+## 7. Marca (logo y datos de contacto en los documentos)
+
+El logo y los datos que aparecen en el encabezado de cotizaciones, órdenes de
+compra y recibos (nombre, eslogan, contacto, correo, WhatsApp) están centralizados
+en `src/lib/business.ts`. Para cambiarlos, edita ese archivo. El logo se sirve
+desde `public/logo-mark.jpg` (el ícono cuadrado) — para reemplazarlo, sustituye
+ese archivo por tu propia imagen cuadrada.
+
+## 8. Reportes en Excel
 
 Desde **Reportes** puedes exportar `.xlsx` de pagos (con filtro de rango de
 fechas), proyectos, clientes y cotizaciones — se generan en el navegador con
 `exceljs`, sin necesidad de backend adicional.
 
-## 8. Desplegar
+## 9. Desplegar
 
 La forma más simple es [Vercel](https://vercel.com):
 

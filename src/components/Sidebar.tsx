@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { BUSINESS } from "@/lib/business";
 import clsx from "clsx";
 
 const NAV_ITEMS = [
@@ -22,12 +24,18 @@ export function Sidebar() {
   return (
     <aside className="no-print flex h-screen w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
       <div className="flex items-center gap-2 border-b border-slate-200 px-5 py-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
-          CR
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-black">
+          <Image
+            src={BUSINESS.logoUrl}
+            alt={BUSINESS.name}
+            width={36}
+            height={36}
+            className="h-full w-full object-cover"
+          />
         </div>
         <div>
           <p className="text-sm font-semibold leading-tight text-slate-900">
-            Code Reset
+            {BUSINESS.name}
           </p>
           <p className="text-xs text-slate-500">Gestión interna</p>
         </div>

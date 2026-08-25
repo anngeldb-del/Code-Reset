@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth, isFirebaseConfigured } from "@/context/AuthContext";
+import { BUSINESS } from "@/lib/business";
 
 export default function LoginPage() {
   const { signIn } = useAuth();
@@ -32,10 +34,18 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-brand text-lg font-bold text-white">
-            CR
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-black">
+            <Image
+              src={BUSINESS.logoUrl}
+              alt={BUSINESS.name}
+              width={56}
+              height={56}
+              className="h-full w-full object-cover"
+            />
           </div>
-          <h1 className="text-xl font-semibold text-slate-900">Code Reset</h1>
+          <h1 className="text-xl font-semibold text-slate-900">
+            {BUSINESS.name}
+          </h1>
           <p className="mt-1 text-sm text-slate-500">
             Panel de proyectos y pagos
           </p>

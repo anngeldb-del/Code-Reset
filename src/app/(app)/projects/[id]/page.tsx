@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
+import { BUSINESS } from "@/lib/business";
 import {
   where,
   createDoc,
@@ -438,11 +440,24 @@ export default function ProjectDetailPage() {
           <div className="space-y-4">
             <div id="receipt-content" className="rounded-xl border border-slate-200 p-5">
               <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-lg font-bold text-slate-900">Code Reset</p>
-                  <p className="text-xs text-slate-500">
-                    Recibo de pago #{receipt.receiptNumber}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-black">
+                    <Image
+                      src={BUSINESS.logoUrl}
+                      alt={BUSINESS.name}
+                      width={40}
+                      height={40}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-slate-900">
+                      {BUSINESS.name}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Recibo de pago #{receipt.receiptNumber}
+                    </p>
+                  </div>
                 </div>
                 <p className="text-sm text-slate-500">
                   {formatDate(receipt.date)}

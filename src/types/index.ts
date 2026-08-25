@@ -44,18 +44,32 @@ export interface Payment {
 
 export interface QuotationItem {
   description: string;
+  brand?: string;
   quantity: number;
   unitPrice: number;
+  discount?: number;
 }
 
-export interface Quotation {
+export interface CommercialTerms {
+  paymentTerms?: string;
+  deliveryTime?: string;
+  warranty?: string;
+  installation?: string;
+  transport?: string;
+}
+
+export interface Quotation extends CommercialTerms {
   id: string;
   folio: string;
   clientId: string;
   projectName: string;
+  description?: string;
+  attentionTo?: string;
+  validUntil?: string;
   items: QuotationItem[];
   total: number;
   currency: string;
+  ivaApplies: boolean;
   status: DocStatus;
   notes?: string;
   createdAt: number;
@@ -64,18 +78,23 @@ export interface Quotation {
 
 export interface PurchaseOrderItem {
   description: string;
+  brand?: string;
   quantity: number;
   unitPrice: number;
+  discount?: number;
 }
 
-export interface PurchaseOrder {
+export interface PurchaseOrder extends CommercialTerms {
   id: string;
   folio: string;
   supplierName: string;
   supplierContact?: string;
+  description?: string;
+  validUntil?: string;
   items: PurchaseOrderItem[];
   total: number;
   currency: string;
+  ivaApplies: boolean;
   status: DocStatus;
   notes?: string;
   createdAt: number;
