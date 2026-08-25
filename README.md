@@ -20,6 +20,13 @@ reportes en Excel.
 - **Órdenes de compra**: mismo formato y flujo que las cotizaciones, para tus proveedores.
 - **Reportes en Excel (.xlsx)**: pagos (con filtro de fechas), proyectos, clientes
   y cotizaciones.
+- **Modo oscuro**: interruptor en la barra lateral, se recuerda entre sesiones.
+- **Diseño responsive**: menú de hamburguesa en celular/tablet, misma app instalable
+  como PWA desde el navegador.
+- **Diagrama de Gantt** (`/projects/gantt`): línea de tiempo de todos los proyectos
+  por fecha de inicio/entrega, con filtro por estado.
+- **Paginación**: los listados de clientes, proyectos, cotizaciones y órdenes de
+  compra cargan por páginas en lugar de traer todo de una vez.
 
 ## Stack técnico
 

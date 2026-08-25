@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { orderBy, createDoc } from "@/lib/firestore";
+import { orderBy, where, createDoc } from "@/lib/firestore";
 import { useCollectionData } from "@/hooks/useCollectionData";
+import { usePaginatedCollection } from "@/hooks/usePaginatedCollection";
 import {
   PageHeader,
   Card,
@@ -15,8 +16,11 @@ import {
   inputClass,
   EmptyState,
 } from "@/components/ui";
+import { Pagination } from "@/components/Pagination";
 import { formatCurrency, todayISO } from "@/lib/format";
 import type { Client, Payment, Project, ProjectStatus } from "@/types";
+
+const PAGE_SIZE = 9;
 
 const STATUS_LABEL: Record<ProjectStatus, string> = {
   cotizado: "Cotizado",
@@ -39,9 +43,27 @@ const STATUS_COLOR: Record<
 
 export default function ProjectsPage() {
   const searchParams = useSearchParams();
-  const { data: projects, loading } = useCollectionData<Project>("projects", [
-    orderBy("createdAt", "desc"),
-  ]);
+  const [statusFilter, setStatusFilter] = useState<ProjectStatus | "todos">(
+    "todos"
+  );
+  const projectConstraints =
+    statusFilter === "todos"
+      ? [orderBy("createdAt", "desc")]
+      : [where("status", "==", statusFilter)];
+  const {
+    items: projects,
+    loading,
+    pageIndex,
+    hasNextPage,
+    hasPrevPage,
+    nextPage,
+    prevPage,
+  } = usePaginatedCollection<Project>(
+    "projects",
+    projectConstraints,
+    PAGE_SIZE,
+    [statusFilter]
+  );
   const { data: clients } = useCollectionData<Client>("clients", [
     orderBy("name", "asc"),
   ]);
@@ -63,9 +85,6 @@ export default function ProjectsPage() {
   const [open, setOpen] = useState(openedFromQuery);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<ProjectStatus | "todos">(
-    "todos"
-  );
   const [form, setForm] = useState({
     clientId: openedFromQuery ? searchParams.get("clientId") ?? "" : "",
     name: "",
@@ -104,18 +123,18 @@ export default function ProjectsPage() {
     }
   }
 
-  const filtered =
-    statusFilter === "todos"
-      ? projects
-      : projects.filter((p) => p.status === statusFilter);
-
   return (
     <div>
       <PageHeader
         title="Proyectos"
         description="Proyectos personalizados para tus clientes"
         actions={
-          <Button onClick={() => setOpen(true)}>+ Nuevo proyecto</Button>
+          <>
+            <Link href="/projects/gantt">
+              <Button variant="secondary">📅 Ver Gantt</Button>
+            </Link>
+            <Button onClick={() => setOpen(true)}>+ Nuevo proyecto</Button>
+          </>
         }
       />
 
@@ -127,7 +146,7 @@ export default function ProjectsPage() {
             className={`rounded-full px-3 py-1 text-xs font-medium ${
               statusFilter === s
                 ? "bg-brand text-white"
-                : "bg-white text-slate-600 border border-slate-200"
+                : "bg-white text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-800"
             }`}
           >
             {s === "todos" ? "Todos" : STATUS_LABEL[s as ProjectStatus]}
@@ -136,32 +155,32 @@ export default function ProjectsPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-slate-400">Cargando...</p>
-      ) : filtered.length === 0 ? (
+        <p className="text-sm text-slate-400 dark:text-slate-500">Cargando...</p>
+      ) : projects.length === 0 ? (
         <EmptyState text="No hay proyectos con este filtro." />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((p) => {
+          {projects.map((p) => {
             const paid = paidByProject.get(p.id) ?? 0;
             const balance = Math.max(p.budgetTotal - paid, 0);
             return (
               <Link key={p.id} href={`/projects/${p.id}`}>
                 <Card className="h-full transition hover:border-brand hover:shadow-md">
                   <div className="mb-2 flex items-start justify-between">
-                    <p className="font-semibold text-slate-900">{p.name}</p>
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{p.name}</p>
                     <Badge color={STATUS_COLOR[p.status]}>
                       {STATUS_LABEL[p.status]}
                     </Badge>
                   </div>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
                     {clientById.get(p.clientId)?.name ?? "Cliente"}
                   </p>
                   <div className="mt-3 flex items-center justify-between text-sm">
-                    <span className="text-slate-500">
+                    <span className="text-slate-500 dark:text-slate-400">
                       Presupuesto: {formatCurrency(p.budgetTotal, p.currency)}
                     </span>
                   </div>
-                  <div className="mt-1 text-sm font-medium text-amber-600">
+                  <div className="mt-1 text-sm font-medium text-amber-600 dark:text-amber-400">
                     Saldo: {formatCurrency(balance, p.currency)}
                   </div>
                 </Card>
@@ -170,6 +189,14 @@ export default function ProjectsPage() {
           })}
         </div>
       )}
+
+      <Pagination
+        pageIndex={pageIndex}
+        hasNextPage={hasNextPage}
+        hasPrevPage={hasPrevPage}
+        onNext={nextPage}
+        onPrev={prevPage}
+      />
 
       <Modal
         open={open}
@@ -288,7 +315,7 @@ export default function ProjectsPage() {
             </Field>
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
             <Button

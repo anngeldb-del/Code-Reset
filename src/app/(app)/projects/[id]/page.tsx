@@ -152,7 +152,7 @@ export default function ProjectDetailPage() {
     await deleteDocById("payments", payment.id);
   }
 
-  if (loading) return <p className="text-sm text-slate-400">Cargando...</p>;
+  if (loading) return <p className="text-sm text-slate-400 dark:text-slate-500">Cargando...</p>;
   if (!project) return <EmptyState text="Proyecto no encontrado." />;
 
   return (
@@ -175,24 +175,24 @@ export default function ProjectDetailPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <p className="text-xs uppercase text-slate-400">Estado</p>
+          <p className="text-xs uppercase text-slate-400 dark:text-slate-500">Estado</p>
           <Badge>{STATUS_LABEL[project.status]}</Badge>
         </Card>
         <Card>
-          <p className="text-xs uppercase text-slate-400">Presupuesto</p>
-          <p className="mt-1 text-lg font-semibold text-slate-800">
+          <p className="text-xs uppercase text-slate-400 dark:text-slate-500">Presupuesto</p>
+          <p className="mt-1 text-lg font-semibold text-slate-800 dark:text-slate-200">
             {formatCurrency(project.budgetTotal, project.currency)}
           </p>
         </Card>
         <Card>
-          <p className="text-xs uppercase text-slate-400">Pagado</p>
-          <p className="mt-1 text-lg font-semibold text-emerald-600">
+          <p className="text-xs uppercase text-slate-400 dark:text-slate-500">Pagado</p>
+          <p className="mt-1 text-lg font-semibold text-emerald-600 dark:text-emerald-400">
             {formatCurrency(totalPaid, project.currency)}
           </p>
         </Card>
         <Card>
-          <p className="text-xs uppercase text-slate-400">Saldo pendiente</p>
-          <p className="mt-1 text-lg font-semibold text-amber-600">
+          <p className="text-xs uppercase text-slate-400 dark:text-slate-500">Saldo pendiente</p>
+          <p className="mt-1 text-lg font-semibold text-amber-600 dark:text-amber-400">
             {formatCurrency(balance, project.currency)}
           </p>
         </Card>
@@ -200,12 +200,12 @@ export default function ProjectDetailPage() {
 
       {project.description && (
         <Card className="mt-4">
-          <p className="text-sm text-slate-600">{project.description}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{project.description}</p>
         </Card>
       )}
 
       <Card className="mt-6">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">
+        <h2 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
           Historial de pagos
         </h2>
         {payments.length === 0 ? (
@@ -214,7 +214,7 @@ export default function ProjectDetailPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
+                <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800 dark:text-slate-500">
                   <th className="py-2 pr-4">Recibo</th>
                   <th className="py-2 pr-4">Fecha</th>
                   <th className="py-2 pr-4">Método</th>
@@ -227,17 +227,17 @@ export default function ProjectDetailPage() {
                 {payments.map((p) => (
                   <tr
                     key={p.id}
-                    className="border-b border-slate-100 last:border-0"
+                    className="border-b border-slate-100 last:border-0 dark:border-slate-800/60"
                   >
-                    <td className="py-2 pr-4 font-mono text-xs text-slate-500">
+                    <td className="py-2 pr-4 font-mono text-xs text-slate-500 dark:text-slate-400">
                       {p.receiptNumber}
                     </td>
                     <td className="py-2 pr-4">{formatDate(p.date)}</td>
                     <td className="py-2 pr-4">{METHOD_LABEL[p.method]}</td>
-                    <td className="py-2 pr-4 text-slate-500">
+                    <td className="py-2 pr-4 text-slate-500 dark:text-slate-400">
                       {p.note || "—"}
                     </td>
-                    <td className="py-2 pr-4 font-medium text-emerald-600">
+                    <td className="py-2 pr-4 font-medium text-emerald-600 dark:text-emerald-400">
                       {formatCurrency(p.amount, project.currency)}
                     </td>
                     <td className="py-2 pr-4 text-right">
@@ -248,7 +248,7 @@ export default function ProjectDetailPage() {
                         Recibo
                       </button>
                       <button
-                        className="text-xs font-medium text-red-600 hover:underline"
+                        className="text-xs font-medium text-red-600 hover:underline dark:text-red-400"
                         onClick={() => handleDeletePayment(p)}
                       >
                         Eliminar
@@ -322,7 +322,7 @@ export default function ProjectDetailPage() {
             />
           </Field>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
             <Button
@@ -438,7 +438,7 @@ export default function ProjectDetailPage() {
       {receipt && client && (
         <Modal open={!!receipt} onClose={() => setReceipt(null)} title="Recibo">
           <div className="space-y-4">
-            <div id="receipt-content" className="rounded-xl border border-slate-200 p-5">
+            <div id="receipt-content" className="rounded-xl border border-slate-200 p-5 dark:border-slate-800">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-black">
@@ -451,36 +451,36 @@ export default function ProjectDetailPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-slate-900">
+                    <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
                       {BUSINESS.name}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       Recibo de pago #{receipt.receiptNumber}
                     </p>
                   </div>
                 </div>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   {formatDate(receipt.date)}
                 </p>
               </div>
               <div className="mb-4 text-sm">
-                <p className="text-slate-500">Cliente</p>
-                <p className="font-medium text-slate-800">{client.name}</p>
-                <p className="text-slate-500 mt-2">Proyecto</p>
-                <p className="font-medium text-slate-800">{project.name}</p>
+                <p className="text-slate-500 dark:text-slate-400">Cliente</p>
+                <p className="font-medium text-slate-800 dark:text-slate-200">{client.name}</p>
+                <p className="text-slate-500 mt-2 dark:text-slate-400">Proyecto</p>
+                <p className="font-medium text-slate-800 dark:text-slate-200">{project.name}</p>
               </div>
-              <div className="flex items-center justify-between border-t border-slate-200 pt-3">
+              <div className="flex items-center justify-between border-t border-slate-200 pt-3 dark:border-slate-800">
                 <div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Método: {METHOD_LABEL[receipt.method]}
                   </p>
                   {receipt.note && (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       Nota: {receipt.note}
                     </p>
                   )}
                 </div>
-                <p className="text-xl font-bold text-emerald-600">
+                <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                   {formatCurrency(receipt.amount, project.currency)}
                 </p>
               </div>
@@ -495,7 +495,7 @@ export default function ProjectDetailPage() {
         </Modal>
       )}
 
-      <p className="mt-6 text-xs text-slate-400">
+      <p className="mt-6 text-xs text-slate-400 dark:text-slate-500">
         <Link href="/projects" className="hover:text-brand">
           ← Volver a proyectos
         </Link>

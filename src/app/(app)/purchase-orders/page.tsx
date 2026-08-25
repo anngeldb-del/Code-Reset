@@ -9,7 +9,7 @@ import {
   deleteDocById,
   getNextFolio,
 } from "@/lib/firestore";
-import { useCollectionData } from "@/hooks/useCollectionData";
+import { usePaginatedCollection } from "@/hooks/usePaginatedCollection";
 import {
   PageHeader,
   Card,
@@ -20,6 +20,7 @@ import {
   inputClass,
   EmptyState,
 } from "@/components/ui";
+import { Pagination } from "@/components/Pagination";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { buildPurchaseOrderPdf } from "@/lib/pdf";
 import { buildWhatsAppLink, purchaseOrderMessage } from "@/lib/whatsapp";
@@ -78,10 +79,21 @@ function calcSubtotal(items: PurchaseOrderItem[]) {
   }, 0);
 }
 
+const PAGE_SIZE = 8;
+
 export default function PurchaseOrdersPage() {
-  const { data: orders, loading } = useCollectionData<PurchaseOrder>(
+  const {
+    items: orders,
+    loading,
+    pageIndex,
+    hasNextPage,
+    hasPrevPage,
+    nextPage,
+    prevPage,
+  } = usePaginatedCollection<PurchaseOrder>(
     "purchaseOrders",
-    [orderBy("createdAt", "desc")]
+    [orderBy("createdAt", "desc")],
+    PAGE_SIZE
   );
 
   const [open, setOpen] = useState(false);
@@ -179,7 +191,7 @@ export default function PurchaseOrdersPage() {
       />
 
       {loading ? (
-        <p className="text-sm text-slate-400">Cargando...</p>
+        <p className="text-sm text-slate-400 dark:text-slate-500">Cargando...</p>
       ) : orders.length === 0 ? (
         <EmptyState text="Aún no has creado órdenes de compra." />
       ) : (
@@ -189,22 +201,22 @@ export default function PurchaseOrdersPage() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-mono text-xs text-slate-400">
+                    <p className="font-mono text-xs text-slate-400 dark:text-slate-500">
                       {po.folio}
                     </p>
                     <Badge color={STATUS_COLOR[po.status]}>
                       {STATUS_LABEL[po.status]}
                     </Badge>
                   </div>
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
                     {po.supplierName}
                   </p>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
                     {formatDate(po.createdAt)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <p className="mr-2 text-lg font-semibold text-slate-800">
+                  <p className="mr-2 text-lg font-semibold text-slate-800 dark:text-slate-200">
                     {formatCurrency(po.total, po.currency)}
                   </p>
                   <Button
@@ -217,8 +229,8 @@ export default function PurchaseOrdersPage() {
                   <Button onClick={() => handleSend(po)}>💬 WhatsApp</Button>
                 </div>
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 text-xs">
-                <span className="text-slate-400">Marcar como:</span>
+              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 text-xs dark:border-slate-800/60">
+                <span className="text-slate-400 dark:text-slate-500">Marcar como:</span>
                 {(["borrador", "enviada", "aceptada", "rechazada"] as DocStatus[]).map(
                   (s) => (
                     <button
@@ -227,7 +239,7 @@ export default function PurchaseOrdersPage() {
                       className={`rounded-full px-2.5 py-1 font-medium ${
                         po.status === s
                           ? "bg-brand text-white"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                       }`}
                     >
                       {STATUS_LABEL[s]}
@@ -236,7 +248,7 @@ export default function PurchaseOrdersPage() {
                 )}
                 <button
                   onClick={() => handleDelete(po)}
-                  className="ml-auto font-medium text-red-600 hover:underline"
+                  className="ml-auto font-medium text-red-600 hover:underline dark:text-red-400"
                 >
                   Eliminar
                 </button>
@@ -245,6 +257,14 @@ export default function PurchaseOrdersPage() {
           ))}
         </div>
       )}
+
+      <Pagination
+        pageIndex={pageIndex}
+        hasNextPage={hasNextPage}
+        hasPrevPage={hasPrevPage}
+        onNext={nextPage}
+        onPrev={prevPage}
+      />
 
       <Modal
         open={open}
@@ -300,7 +320,7 @@ export default function PurchaseOrdersPage() {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-slate-700">Conceptos</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Conceptos</p>
               <button
                 type="button"
                 className="text-xs font-medium text-brand hover:underline"
@@ -318,7 +338,7 @@ export default function PurchaseOrdersPage() {
               {form.items.map((it, i) => (
                 <div
                   key={i}
-                  className="rounded-lg border border-slate-200 p-2"
+                  className="rounded-lg border border-slate-200 p-2 dark:border-slate-800"
                 >
                   <input
                     className={`${inputClass} mb-2`}
@@ -373,7 +393,7 @@ export default function PurchaseOrdersPage() {
                     />
                     <button
                       type="button"
-                      className="col-span-2 text-slate-400 hover:text-red-600"
+                      className="col-span-2 text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400"
                       onClick={() =>
                         setForm((f) => ({
                           ...f,
@@ -402,7 +422,7 @@ export default function PurchaseOrdersPage() {
                 <option value="USD">USD</option>
               </select>
             </Field>
-            <label className="flex items-center gap-2 self-end pb-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 self-end pb-2 text-sm text-slate-700 dark:text-slate-300">
               <input
                 type="checkbox"
                 checked={form.ivaApplies}
@@ -413,17 +433,17 @@ export default function PurchaseOrdersPage() {
               Aplicar IVA (16%)
             </label>
             <div className="flex flex-col items-end justify-end text-right">
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-400 dark:text-slate-500">
                 Subtotal: {formatCurrency(subtotal, form.currency)}
               </p>
-              <p className="text-lg font-semibold text-slate-800">
+              <p className="text-lg font-semibold text-slate-800 dark:text-slate-200">
                 Total: {formatCurrency(total, form.currency)}
               </p>
             </div>
           </div>
 
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">
+            <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
               Condiciones comerciales
             </p>
             <div className="grid grid-cols-2 gap-3">
@@ -485,7 +505,7 @@ export default function PurchaseOrdersPage() {
             </div>
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
             <Button

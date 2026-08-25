@@ -14,6 +14,7 @@ import { orderBy } from "@/lib/firestore";
 import { useCollectionData } from "@/hooks/useCollectionData";
 import { PageHeader, Card, StatCard, EmptyState, Badge } from "@/components/ui";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { useTheme } from "@/context/ThemeContext";
 import type { Client, Payment, Project } from "@/types";
 import Link from "next/link";
 
@@ -34,6 +35,12 @@ const STATUS_COLOR: Record<Project["status"], "slate" | "green" | "amber" | "red
 };
 
 export default function DashboardPage() {
+  const { theme } = useTheme();
+  const chartColors =
+    theme === "dark"
+      ? { grid: "#1e293b", axis: "#64748b", bar: "#818cf8" }
+      : { grid: "#e2e8f0", axis: "#94a3b8", bar: "#4f46e5" };
+
   const { data: projects, loading: loadingProjects } =
     useCollectionData<Project>("projects", [orderBy("createdAt", "desc")]);
   const { data: payments, loading: loadingPayments } =
@@ -130,7 +137,7 @@ export default function DashboardPage() {
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <h2 className="mb-4 text-sm font-semibold text-slate-700">
+          <h2 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
             Ingresos por mes
           </h2>
           {monthlyIncome.length === 0 ? (
@@ -139,15 +146,15 @@ export default function DashboardPage() {
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthlyIncome}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
                   <XAxis
                     dataKey="month"
-                    stroke="#94a3b8"
+                    stroke={chartColors.axis}
                     fontSize={12}
                     tickLine={false}
                   />
                   <YAxis
-                    stroke="#94a3b8"
+                    stroke={chartColors.axis}
                     fontSize={12}
                     tickLine={false}
                     tickFormatter={(v) => formatCurrency(v).replace(/\.00$/, "")}
@@ -155,8 +162,17 @@ export default function DashboardPage() {
                   />
                   <Tooltip
                     formatter={(value) => formatCurrency(Number(value))}
+                    contentStyle={
+                      theme === "dark"
+                        ? {
+                            background: "#0f172a",
+                            border: "1px solid #1e293b",
+                            color: "#e2e8f0",
+                          }
+                        : undefined
+                    }
                   />
-                  <Bar dataKey="total" fill="#4f46e5" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="total" fill={chartColors.bar} radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -164,7 +180,7 @@ export default function DashboardPage() {
         </Card>
 
         <Card>
-          <h2 className="mb-4 text-sm font-semibold text-slate-700">
+          <h2 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
             Pagos recientes
           </h2>
           {recentPayments.length === 0 ? (
@@ -174,14 +190,14 @@ export default function DashboardPage() {
               {recentPayments.map((p) => (
                 <li key={p.id} className="flex items-center justify-between text-sm">
                   <div>
-                    <p className="font-medium text-slate-800">
+                    <p className="font-medium text-slate-800 dark:text-slate-200">
                       {clientById.get(p.clientId)?.name ?? "Cliente"}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-400 dark:text-slate-500">
                       {formatDate(p.date)}
                     </p>
                   </div>
-                  <span className="font-semibold text-emerald-600">
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                     {formatCurrency(p.amount)}
                   </span>
                 </li>
@@ -193,7 +209,7 @@ export default function DashboardPage() {
 
       <Card className="mt-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-700">
+          <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
             Proyectos recientes
           </h2>
           <Link
@@ -204,14 +220,14 @@ export default function DashboardPage() {
           </Link>
         </div>
         {loadingProjects || loadingPayments ? (
-          <p className="text-sm text-slate-400">Cargando...</p>
+          <p className="text-sm text-slate-400 dark:text-slate-500">Cargando...</p>
         ) : projects.length === 0 ? (
           <EmptyState text="Todavía no has registrado proyectos." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
+                <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800 dark:text-slate-500">
                   <th className="py-2 pr-4">Proyecto</th>
                   <th className="py-2 pr-4">Cliente</th>
                   <th className="py-2 pr-4">Estado</th>
@@ -226,17 +242,17 @@ export default function DashboardPage() {
                   return (
                     <tr
                       key={p.id}
-                      className="border-b border-slate-100 last:border-0"
+                      className="border-b border-slate-100 last:border-0 dark:border-slate-800/60"
                     >
                       <td className="py-2 pr-4">
                         <Link
                           href={`/projects/${p.id}`}
-                          className="font-medium text-slate-800 hover:text-brand"
+                          className="font-medium text-slate-800 hover:text-brand dark:text-slate-200"
                         >
                           {p.name}
                         </Link>
                       </td>
-                      <td className="py-2 pr-4 text-slate-600">
+                      <td className="py-2 pr-4 text-slate-600 dark:text-slate-400">
                         {clientById.get(p.clientId)?.name ?? "—"}
                       </td>
                       <td className="py-2 pr-4">
@@ -244,10 +260,10 @@ export default function DashboardPage() {
                           {STATUS_LABEL[p.status]}
                         </Badge>
                       </td>
-                      <td className="py-2 pr-4 text-slate-600">
+                      <td className="py-2 pr-4 text-slate-600 dark:text-slate-400">
                         {formatCurrency(p.budgetTotal, p.currency)}
                       </td>
-                      <td className="py-2 pr-4 font-medium text-amber-600">
+                      <td className="py-2 pr-4 font-medium text-amber-600 dark:text-amber-400">
                         {formatCurrency(balance, p.currency)}
                       </td>
                     </tr>

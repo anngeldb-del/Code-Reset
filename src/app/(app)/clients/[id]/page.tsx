@@ -85,7 +85,7 @@ export default function ClientDetailPage() {
     router.push("/clients");
   }
 
-  if (loading) return <p className="text-sm text-slate-400">Cargando...</p>;
+  if (loading) return <p className="text-sm text-slate-400 dark:text-slate-500">Cargando...</p>;
   if (!client) return <EmptyState text="Cliente no encontrado." />;
 
   return (
@@ -107,26 +107,26 @@ export default function ClientDetailPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card>
-          <h2 className="mb-3 text-sm font-semibold text-slate-700">
+          <h2 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
             Datos de contacto
           </h2>
           <dl className="space-y-2 text-sm">
             <div>
-              <dt className="text-slate-400">Teléfono</dt>
-              <dd className="text-slate-700">{client.phone || "—"}</dd>
+              <dt className="text-slate-400 dark:text-slate-500">Teléfono</dt>
+              <dd className="text-slate-700 dark:text-slate-300">{client.phone || "—"}</dd>
             </div>
             <div>
-              <dt className="text-slate-400">Correo</dt>
-              <dd className="text-slate-700">{client.email || "—"}</dd>
+              <dt className="text-slate-400 dark:text-slate-500">Correo</dt>
+              <dd className="text-slate-700 dark:text-slate-300">{client.email || "—"}</dd>
             </div>
             <div>
-              <dt className="text-slate-400">Dirección</dt>
-              <dd className="text-slate-700">{client.address || "—"}</dd>
+              <dt className="text-slate-400 dark:text-slate-500">Dirección</dt>
+              <dd className="text-slate-700 dark:text-slate-300">{client.address || "—"}</dd>
             </div>
             {client.notes && (
               <div>
-                <dt className="text-slate-400">Notas</dt>
-                <dd className="text-slate-700">{client.notes}</dd>
+                <dt className="text-slate-400 dark:text-slate-500">Notas</dt>
+                <dd className="text-slate-700 dark:text-slate-300">{client.notes}</dd>
               </div>
             )}
           </dl>
@@ -143,15 +143,15 @@ export default function ClientDetailPage() {
         </Card>
 
         <Card>
-          <h2 className="mb-3 text-sm font-semibold text-slate-700">
+          <h2 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
             Resumen
           </h2>
-          <p className="text-xs text-slate-400">Total pagado</p>
-          <p className="text-xl font-semibold text-emerald-600">
+          <p className="text-xs text-slate-400 dark:text-slate-500">Total pagado</p>
+          <p className="text-xl font-semibold text-emerald-600 dark:text-emerald-400">
             {formatCurrency(totalPaid)}
           </p>
-          <p className="mt-3 text-xs text-slate-400">Proyectos</p>
-          <p className="text-xl font-semibold text-slate-800">
+          <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">Proyectos</p>
+          <p className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {projects.length}
           </p>
         </Card>
@@ -169,23 +169,23 @@ export default function ClientDetailPage() {
       </div>
 
       <Card className="mt-6">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">
+        <h2 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
           Proyectos
         </h2>
         {projects.length === 0 ? (
           <EmptyState text="Este cliente aún no tiene proyectos." />
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800/60">
             {projects.map((p) => (
               <li key={p.id} className="flex items-center justify-between py-3">
                 <div>
                   <Link
                     href={`/projects/${p.id}`}
-                    className="font-medium text-slate-800 hover:text-brand"
+                    className="font-medium text-slate-800 hover:text-brand dark:text-slate-200"
                   >
                     {p.name}
                   </Link>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
                     {formatCurrency(p.budgetTotal, p.currency)}
                   </p>
                 </div>
@@ -198,8 +198,8 @@ export default function ClientDetailPage() {
 
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4 py-8">
-          <div className="max-h-full w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-            <h2 className="mb-4 text-lg font-semibold">Editar cliente</h2>
+          <div className="max-h-full w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Editar cliente</h2>
             <form onSubmit={handleSave} className="space-y-4">
               <Field label="Nombre">
                 <input

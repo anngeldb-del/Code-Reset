@@ -191,7 +191,7 @@ export default function ReportsPage() {
       />
 
       <Card className="mb-6">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">
+        <h2 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
           Rango de fechas para reporte de pagos
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -216,7 +216,7 @@ export default function ReportsPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <p className="mb-3 text-sm font-semibold text-slate-700">Pagos</p>
+          <p className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Pagos</p>
           <Button
             className="w-full"
             onClick={exportPayments}
@@ -226,7 +226,7 @@ export default function ReportsPage() {
           </Button>
         </Card>
         <Card>
-          <p className="mb-3 text-sm font-semibold text-slate-700">
+          <p className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
             Proyectos
           </p>
           <Button
@@ -238,7 +238,7 @@ export default function ReportsPage() {
           </Button>
         </Card>
         <Card>
-          <p className="mb-3 text-sm font-semibold text-slate-700">
+          <p className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
             Clientes
           </p>
           <Button
@@ -250,7 +250,7 @@ export default function ReportsPage() {
           </Button>
         </Card>
         <Card>
-          <p className="mb-3 text-sm font-semibold text-slate-700">
+          <p className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
             Cotizaciones
           </p>
           <Button

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { orderBy, createDoc } from "@/lib/firestore";
-import { useCollectionData } from "@/hooks/useCollectionData";
+import { usePaginatedCollection } from "@/hooks/usePaginatedCollection";
 import {
   PageHeader,
   Card,
@@ -13,12 +13,25 @@ import {
   inputClass,
   EmptyState,
 } from "@/components/ui";
+import { Pagination } from "@/components/Pagination";
 import type { Client } from "@/types";
 
+const PAGE_SIZE = 9;
+
 export default function ClientsPage() {
-  const { data: clients, loading } = useCollectionData<Client>("clients", [
-    orderBy("name", "asc"),
-  ]);
+  const {
+    items: clients,
+    loading,
+    pageIndex,
+    hasNextPage,
+    hasPrevPage,
+    nextPage,
+    prevPage,
+  } = usePaginatedCollection<Client>(
+    "clients",
+    [orderBy("name", "asc")],
+    PAGE_SIZE
+  );
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +77,7 @@ export default function ClientsPage() {
       />
 
       {loading ? (
-        <p className="text-sm text-slate-400">Cargando...</p>
+        <p className="text-sm text-slate-400 dark:text-slate-500">Cargando...</p>
       ) : clients.length === 0 ? (
         <EmptyState text="Todavía no tienes clientes registrados." />
       ) : (
@@ -72,23 +85,31 @@ export default function ClientsPage() {
           {clients.map((c) => (
             <Link key={c.id} href={`/clients/${c.id}`}>
               <Card className="h-full transition hover:border-brand hover:shadow-md">
-                <p className="font-semibold text-slate-900">{c.name}</p>
+                <p className="font-semibold text-slate-900 dark:text-slate-100">{c.name}</p>
                 {c.contactName && (
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     Contacto: {c.contactName}
                   </p>
                 )}
                 {c.phone && (
-                  <p className="mt-1 text-sm text-slate-500">📞 {c.phone}</p>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">📞 {c.phone}</p>
                 )}
                 {c.email && (
-                  <p className="mt-1 text-sm text-slate-500">✉️ {c.email}</p>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">✉️ {c.email}</p>
                 )}
               </Card>
             </Link>
           ))}
         </div>
       )}
+
+      <Pagination
+        pageIndex={pageIndex}
+        hasNextPage={hasNextPage}
+        hasPrevPage={hasPrevPage}
+        onNext={nextPage}
+        onPrev={prevPage}
+      />
 
       <Modal open={open} onClose={() => setOpen(false)} title="Nuevo cliente">
         <form onSubmit={handleCreate} className="space-y-4">
@@ -143,7 +164,7 @@ export default function ClientsPage() {
             />
           </Field>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
             <Button
