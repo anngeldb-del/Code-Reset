@@ -4,6 +4,11 @@ Panel interno de **Code Reset**, para administrar clientes, proyectos y pagos,
 generar cotizaciones y órdenes de compra, enviarlas por WhatsApp y exportar
 reportes en Excel.
 
+Es una **app 100% estática** (HTML/CSS/JS puro, sin servidor) — corre igual que
+cualquier otra app HTML/JS que despliegues en GitHub Pages: se sube el
+repositorio y ya está en línea, sin depender de Vercel ni de ningún otro
+servicio de hosting.
+
 ## Funcionalidades
 
 - **Login de un solo administrador** con Firebase Authentication.
@@ -16,7 +21,7 @@ reportes en Excel.
 - **Cotizaciones**: formato profesional con logo, folio, datos de contacto, marca/modelo
   y descuento por concepto, IVA opcional y condiciones comerciales (forma de pago, tiempo
   de entrega, garantía, instalación, transporte). PDF descargable y envío por WhatsApp
-  con el mensaje ya redactado.
+  con el mensaje ya redactado (enlace `wa.me`).
 - **Órdenes de compra**: mismo formato y flujo que las cotizaciones, para tus proveedores.
 - **Reportes en Excel (.xlsx)**: pagos (con filtro de fechas), proyectos, clientes
   y cotizaciones.
@@ -30,8 +35,10 @@ reportes en Excel.
 
 ## Stack técnico
 
-- [Next.js](https://nextjs.org) (App Router) + TypeScript + Tailwind CSS
-- [Firebase](https://firebase.google.com): Authentication + Firestore (+ Storage opcional)
+- [Next.js](https://nextjs.org) (App Router, **exportación estática** — `output: "export"`)
+  + TypeScript + Tailwind CSS
+- [Firebase](https://firebase.google.com): Authentication + Firestore (todo desde el
+  navegador, con el SDK del cliente — no hay servidor propio)
 - `jspdf` / `jspdf-autotable` para generar PDFs
 - `exceljs` para generar reportes `.xlsx`
 - `recharts` para las gráficas del dashboard
@@ -51,10 +58,11 @@ npm install
    (tu correo y una contraseña segura). Con ese usuario iniciarás sesión en la app.
 4. **Firestore Database** → **Crear base de datos** → modo producción → elige la
    región más cercana.
-5. (Opcional, solo si quieres subir los PDF de cotizaciones/órdenes a un enlace
-   público para enviarlos automáticamente por WhatsApp) **Storage** → **Comenzar**.
-6. En **Configuración del proyecto** (ícono de engrane) → *Tus apps* → agrega una
+5. En **Configuración del proyecto** (ícono de engrane) → *Tus apps* → agrega una
    **app web** (ícono `</>`). Copia los valores del `firebaseConfig` que te muestra.
+6. **Authentication** → pestaña **Settings** → **Authorized domains** → **Add domain**
+   → agrega el dominio donde vas a publicar la app (por ejemplo
+   `tu-usuario.github.io`). Sin este paso el login no va a funcionar en producción.
 
 ## 3. Variables de entorno
 
@@ -72,6 +80,10 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 NEXT_PUBLIC_FIREBASE_APP_ID=...
 ```
+
+Estos valores del SDK web de Firebase **no son secretos** — están pensados para
+viajar dentro del código del navegador. La seguridad real la dan las reglas de
+Firestore (paso 4) y el login, no ocultar este archivo.
 
 ## 4. Reglas de seguridad de Firestore
 
@@ -97,20 +109,11 @@ admin que creaste en el paso 2 y ¡listo!
 
 ## 6. Envío de cotizaciones y órdenes por WhatsApp
 
-Por defecto, el botón **💬 WhatsApp** descarga el PDF y abre un enlace `wa.me`
-con el mensaje ya redactado para el número del cliente/proveedor — no requiere
-ninguna configuración adicional, solo adjuntas el PDF descargado dentro de
-WhatsApp Web o la app.
-
-Si prefieres enviar el mensaje **automáticamente** (sin abrir WhatsApp
-manualmente) usando la API oficial de Meta:
-
-1. Crea una app de WhatsApp Business en [developers.facebook.com](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started).
-2. Obtén tu `WHATSAPP_TOKEN` (token de acceso permanente) y tu `WHATSAPP_PHONE_NUMBER_ID`.
-3. Agrégalos a `.env.local`.
-4. El endpoint `POST /api/whatsapp/send` (`src/app/api/whatsapp/send/route.ts`)
-   queda disponible para integrarlo donde lo necesites — recibe `{ to, text }`
-   o `{ to, documentUrl, filename, caption }`.
+El botón **💬 WhatsApp** descarga el PDF y abre un enlace `wa.me` con el mensaje
+ya redactado para el número del cliente/proveedor — no requiere ninguna
+configuración ni servidor, solo adjuntas el PDF descargado dentro de WhatsApp
+Web o la app. Al ser una app 100% estática, no hay forma de enviar el mensaje
+de forma automática sin abrir WhatsApp (eso requeriría un servidor).
 
 ## 7. Marca (logo y datos de contacto en los documentos)
 
@@ -137,16 +140,38 @@ Desde **Reportes** puedes exportar `.xlsx` de pagos (con filtro de rango de
 fechas), proyectos, clientes y cotizaciones — se generan en el navegador con
 `exceljs`, sin necesidad de backend adicional.
 
-## 9. Desplegar
+## 9. Desplegar en GitHub Pages
 
-La forma más simple es [Vercel](https://vercel.com):
+La app está configurada para exportarse como sitio 100% estático y publicarse
+en GitHub Pages automáticamente con GitHub Actions.
+
+**Un solo paso manual, una sola vez:**
+
+1. En GitHub, entra al repositorio → **Settings** → **Pages**.
+2. En **Source**, cambia de "Deploy from a branch" a **"GitHub Actions"**.
+
+Eso es todo. A partir de ahí, **cada vez que se suba un cambio a la rama
+`main`**, el workflow `.github/workflows/deploy-pages.yml` compila la app
+(`next build` con exportación estática) y la publica sola en
+`https://<tu-usuario>.github.io/Code-Reset/`. No hay que ejecutar ningún
+comando ni tocar ninguna otra configuración.
+
+El workflow ya trae la configuración pública de Firebase incluida (son valores
+públicos, ver el punto 3 de arriba). Si en algún momento cambias de proyecto de
+Firebase, actualiza esos mismos valores dentro de
+`.github/workflows/deploy-pages.yml`.
+
+### Ejecutarlo tú mismo / otro hosting estático
 
 ```bash
-npm run build
+GITHUB_PAGES=true npm run build
 ```
 
-Sube el repositorio a Vercel (o a tu hosting de Next.js preferido) y define ahí
-las mismas variables de entorno de `.env.local`.
+Genera la carpeta `out/` con HTML/CSS/JS listos para subir a cualquier hosting
+estático (GitHub Pages, Netlify, Firebase Hosting, un servidor propio, etc.).
+La variable `GITHUB_PAGES=true` agrega el prefijo `/Code-Reset` a todas las
+rutas — si despliegas en la raíz de un dominio (no en un subdirectorio), corre
+`npm run build` sin esa variable.
 
 ## Estructura del proyecto
 
@@ -157,14 +182,20 @@ src/
     (app)/                 # Rutas protegidas (requieren sesión)
       dashboard/
       clients/
+      clients/detail/      # Ficha de cliente (?id=...)
       projects/
+      projects/detail/     # Ficha de proyecto (?id=...)
+      projects/gantt/      # Diagrama de Gantt
       quotations/
       purchase-orders/
       reports/
-    api/whatsapp/send/     # Endpoint opcional de WhatsApp Cloud API
   components/               # UI compartida (botones, tarjetas, modales, sidebar)
-  context/AuthContext.tsx   # Sesión del admin (Firebase Auth)
-  hooks/                    # Hooks de datos en tiempo real (Firestore)
-  lib/                      # Firebase, Firestore, PDF, Excel, WhatsApp, formato
+  context/                  # Sesión del admin y modo oscuro
+  hooks/                    # Hooks de datos en tiempo real (Firestore) y paginación
+  lib/                      # Firebase, Firestore, PDF, Excel, WhatsApp, formato, basePath
   types/                    # Tipos compartidos (Cliente, Proyecto, Pago, etc.)
 ```
+
+Las páginas de detalle de cliente/proyecto usan `?id=` en la URL en vez de
+`/clients/123` — es lo que permite que la app sea 100% estática (GitHub Pages
+no puede generar páginas para IDs que no existían al momento de compilar).

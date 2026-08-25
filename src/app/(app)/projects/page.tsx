@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { orderBy, where, createDoc } from "@/lib/firestore";
@@ -41,7 +41,7 @@ const STATUS_COLOR: Record<
   cancelado: "red",
 };
 
-export default function ProjectsPage() {
+function ProjectsPageContent() {
   const searchParams = useSearchParams();
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "todos">(
     "todos"
@@ -164,7 +164,7 @@ export default function ProjectsPage() {
             const paid = paidByProject.get(p.id) ?? 0;
             const balance = Math.max(p.budgetTotal - paid, 0);
             return (
-              <Link key={p.id} href={`/projects/${p.id}`}>
+              <Link key={p.id} href={`/projects/detail?id=${p.id}`}>
                 <Card className="h-full transition hover:border-brand hover:shadow-md">
                   <div className="mb-2 flex items-start justify-between">
                     <p className="font-semibold text-slate-900 dark:text-slate-100">{p.name}</p>
@@ -332,5 +332,13 @@ export default function ProjectsPage() {
         </form>
       </Modal>
     </div>
+  );
+}
+
+export default function ProjectsPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-slate-400 dark:text-slate-500">Cargando...</p>}>
+      <ProjectsPageContent />
+    </Suspense>
   );
 }

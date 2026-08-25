@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { addDays } from "date-fns";
 import {
@@ -84,7 +84,7 @@ function calcSubtotal(items: QuotationItem[]) {
 
 const PAGE_SIZE = 8;
 
-export default function QuotationsPage() {
+function QuotationsPageContent() {
   const searchParams = useSearchParams();
   const {
     items: quotations,
@@ -577,5 +577,13 @@ export default function QuotationsPage() {
         </form>
       </Modal>
     </div>
+  );
+}
+
+export default function QuotationsPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-slate-400 dark:text-slate-500">Cargando...</p>}>
+      <QuotationsPageContent />
+    </Suspense>
   );
 }

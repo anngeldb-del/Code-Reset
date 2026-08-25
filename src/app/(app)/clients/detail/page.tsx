@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { where, updateDocById, deleteDocById } from "@/lib/firestore";
 import { useDocData } from "@/hooks/useDocData";
@@ -26,20 +26,21 @@ const STATUS_LABEL: Record<Project["status"], string> = {
   cancelado: "Cancelado",
 };
 
-export default function ClientDetailPage() {
-  const params = useParams<{ id: string }>();
+function ClientDetailContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") ?? undefined;
   const router = useRouter();
-  const { data: client, loading } = useDocData<Client>("clients", params.id);
+  const { data: client, loading } = useDocData<Client>("clients", id);
   const { data: projectsRaw } = useCollectionData<Project>(
     "projects",
-    [where("clientId", "==", params.id)],
-    [params.id]
+    [where("clientId", "==", id)],
+    [id]
   );
   const projects = [...projectsRaw].sort((a, b) => b.createdAt - a.createdAt);
   const { data: payments } = useCollectionData<Payment>(
     "payments",
-    [where("clientId", "==", params.id)],
-    [params.id]
+    [where("clientId", "==", id)],
+    [id]
   );
 
   const [editing, setEditing] = useState(false);
@@ -180,7 +181,7 @@ export default function ClientDetailPage() {
               <li key={p.id} className="flex items-center justify-between py-3">
                 <div>
                   <Link
-                    href={`/projects/${p.id}`}
+                    href={`/projects/detail?id=${p.id}`}
                     className="font-medium text-slate-800 hover:text-brand dark:text-slate-200"
                   >
                     {p.name}
@@ -274,5 +275,13 @@ export default function ClientDetailPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ClientDetailPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-slate-400 dark:text-slate-500">Cargando...</p>}>
+      <ClientDetailContent />
+    </Suspense>
   );
 }

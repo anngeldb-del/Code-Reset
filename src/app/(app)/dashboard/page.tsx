@@ -246,7 +246,7 @@ export default function DashboardPage() {
                     >
                       <td className="py-2 pr-4">
                         <Link
-                          href={`/projects/${p.id}`}
+                          href={`/projects/detail?id=${p.id}`}
                           className="font-medium text-slate-800 hover:text-brand dark:text-slate-200"
                         >
                           {p.name}

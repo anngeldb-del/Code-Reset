@@ -131,7 +131,7 @@ export function GanttChart({
             >
               <div className="w-60 shrink-0 pr-3">
                 <Link
-                  href={`/projects/${row.project.id}`}
+                  href={`/projects/detail?id=${row.project.id}`}
                   className="block truncate text-sm font-medium text-slate-800 hover:text-brand dark:text-slate-200"
                   title={row.project.name}
                 >
@@ -143,7 +143,7 @@ export function GanttChart({
               </div>
               <div className="relative h-6 flex-1">
                 <Link
-                  href={`/projects/${row.project.id}`}
+                  href={`/projects/detail?id=${row.project.id}`}
                   className={`absolute top-0.5 h-5 rounded-full ${STATUS_BAR_CLASS[row.project.status]} ${
                     row.estimated ? "opacity-60" : ""
                   } transition hover:opacity-80`}

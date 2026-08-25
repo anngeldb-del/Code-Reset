@@ -83,7 +83,7 @@ export default function ClientsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {clients.map((c) => (
-            <Link key={c.id} href={`/clients/${c.id}`}>
+            <Link key={c.id} href={`/clients/detail?id=${c.id}`}>
               <Card className="h-full transition hover:border-brand hover:shadow-md">
                 <p className="font-semibold text-slate-900 dark:text-slate-100">{c.name}</p>
                 {c.contactName && (

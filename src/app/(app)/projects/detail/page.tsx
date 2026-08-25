@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { BUSINESS } from "@/lib/business";
@@ -42,17 +42,15 @@ const METHOD_LABEL: Record<PaymentMethod, string> = {
   otro: "Otro",
 };
 
-export default function ProjectDetailPage() {
-  const params = useParams<{ id: string }>();
+function ProjectDetailContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") ?? undefined;
   const router = useRouter();
-  const { data: project, loading } = useDocData<Project>(
-    "projects",
-    params.id
-  );
+  const { data: project, loading } = useDocData<Project>("projects", id);
   const { data: paymentsRaw } = useCollectionData<Payment>(
     "payments",
-    [where("projectId", "==", params.id)],
-    [params.id]
+    [where("projectId", "==", id)],
+    [id]
   );
   const payments = [...paymentsRaw].sort((a, b) =>
     b.date.localeCompare(a.date)
@@ -501,5 +499,13 @@ export default function ProjectDetailPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function ProjectDetailPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-slate-400 dark:text-slate-500">Cargando...</p>}>
+      <ProjectDetailContent />
+    </Suspense>
   );
 }
