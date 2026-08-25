@@ -205,7 +205,7 @@ export default function ProjectsPage() {
         wide
       >
         <form onSubmit={handleCreate} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Cliente *">
               <select
                 required
@@ -264,7 +264,7 @@ export default function ProjectsPage() {
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Fecha inicio">
               <input
                 type="date"
@@ -287,7 +287,7 @@ export default function ProjectsPage() {
             </Field>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Presupuesto total *">
               <input
                 required

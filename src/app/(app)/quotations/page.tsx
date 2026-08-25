@@ -307,7 +307,7 @@ export default function QuotationsPage() {
         wide
       >
         <form onSubmit={handleCreate} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Cliente / Empresa *">
               <select
                 required
@@ -337,7 +337,7 @@ export default function QuotationsPage() {
             </Field>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Atención a (contacto/teléfono)">
               <input
                 className={inputClass}
@@ -401,9 +401,9 @@ export default function QuotationsPage() {
                       updateItem(i, { description: e.target.value })
                     }
                   />
-                  <div className="grid grid-cols-12 gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-12">
                     <input
-                      className={`${inputClass} col-span-4`}
+                      className={`${inputClass} col-span-2 sm:col-span-4`}
                       placeholder="Marca/Modelo"
                       value={it.brand}
                       onChange={(e) =>
@@ -414,7 +414,7 @@ export default function QuotationsPage() {
                       type="number"
                       min="0"
                       step="1"
-                      className={`${inputClass} col-span-2`}
+                      className={`${inputClass} col-span-1 sm:col-span-2`}
                       placeholder="Cant."
                       value={it.quantity}
                       onChange={(e) =>
@@ -425,7 +425,7 @@ export default function QuotationsPage() {
                       type="number"
                       min="0"
                       step="0.01"
-                      className={`${inputClass} col-span-2`}
+                      className={`${inputClass} col-span-1 sm:col-span-2`}
                       placeholder="Precio"
                       value={it.unitPrice}
                       onChange={(e) =>
@@ -437,7 +437,7 @@ export default function QuotationsPage() {
                       min="0"
                       max="100"
                       step="1"
-                      className={`${inputClass} col-span-2`}
+                      className={`${inputClass} col-span-1 sm:col-span-2`}
                       placeholder="Dscto. %"
                       value={it.discount}
                       onChange={(e) =>
@@ -446,7 +446,7 @@ export default function QuotationsPage() {
                     />
                     <button
                       type="button"
-                      className="col-span-2 text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400"
+                      className="col-span-1 text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400 sm:col-span-2"
                       onClick={() =>
                         setForm((f) => ({
                           ...f,
@@ -462,7 +462,7 @@ export default function QuotationsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Field label="Moneda">
               <select
                 className={inputClass}
@@ -499,7 +499,7 @@ export default function QuotationsPage() {
             <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
               Condiciones comerciales
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field label="Forma de pago">
                 <input
                   className={inputClass}

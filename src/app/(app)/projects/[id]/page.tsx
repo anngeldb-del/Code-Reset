@@ -268,7 +268,7 @@ export default function ProjectDetailPage() {
         title="Registrar pago"
       >
         <form onSubmit={handleAddPayment} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Fecha *">
               <input
                 type="date"
@@ -365,7 +365,7 @@ export default function ProjectDetailPage() {
                 }
               />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field label="Estado">
                 <select
                   className={inputClass}
@@ -397,7 +397,7 @@ export default function ProjectDetailPage() {
                 />
               </Field>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field label="Fecha inicio">
                 <input
                   type="date"
